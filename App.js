@@ -1,96 +1,81 @@
-import { useState } from 'react'
-import { NavigationContainer, useNavigation } from '@react-navigation/native';
-import { SafeAreaView, StyleSheet, StatusBar, TouchableOpacity, Text } from 'react-native';
-import { createDrawerNavigator } from '@react-navigation/drawer';
+import { View, Text, TouchableOpacity,  SafeAreaView, StyleSheet } from 'react-native'
+
+
 import Icon from 'react-native-vector-icons/Ionicons'; // Importando o ícone do carrinho
-// import { ThemeProvider } from './src/context/ThemeContext.jsx';
-import { HomePage } from './src/pages/Home/Home.jsx';
-import { CartPage } from './src/pages/Cart/Cart.jsx';
-import { ProductPage } from './src/pages/Products/ProductsPage.jsx';
+import { createDrawerNavigator } from '@react-navigation/drawer'
+import { NavigationContainer, useNavigation } from '@react-navigation/native'
 
-import './gesture-handler.native';
-import { ThemeProvider } from './src/context/ThemeContext.jsx';
-import { CartProvider } from './src/context/CartContext.jsx';
-import { AuthProvider, useAuth } from './src/context/AuthContext.jsx';
-import { Login } from './src/pages/Login/Login.jsx';
-// import { CartProvider } from './src/context/CartContext.jsx';
+import Home from './src/pages/Home'
+import Login from './src/pages/Login'
+import Products from './src/pages/Products'
+import CartPage from './src/pages/CartPage'
 
-const Drawer = createDrawerNavigator();
+//import { AuthProvider, useAuth } from './src/Contexts/DUO'
+import { AuthProvider, useAuth } from './src/Contexts/Auth'
+import { CartProvider, useCart } from './src/Contexts/Cart';
 
-export default function App() {
 
+const Drawer = createDrawerNavigator()
+
+export default function App (){
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={{ flex: 1 }}>
       <AuthProvider>
-        <ThemeProvider>
-          <CartProvider>
-            <NavigationContainer>
-              <StatusBar
-                backgroundColor="transparent"
-                translucent={true}
-                barStyle="dark-content" // Define o estilo do conteúdo da StatusBar (claro ou escuro)
-              />
-              <Navigation />
-            </NavigationContainer>
-          </CartProvider>
-        </ThemeProvider>
+        <CartProvider>
+          <NavigationContainer>
+            <Navigator />
+          </NavigationContainer>
+        </CartProvider>
       </AuthProvider>
     </SafeAreaView>
-
   )
 }
 
-const Navigation = () => {
+const Navigator = () => {
 
   const { user } = useAuth()
-  // const user = true;
 
   return (
     <>
-      {user ?
-        <Drawer.Navigator initialRouteName="Products">
-          <Drawer.Screen
-            name="E-Commerce"
-            component={HomePage}
-            options={{
-              headerRight: () => <CartIconWithNavigation />,
-              title: 'E-Commerce',
-            }} />
-          <Drawer.Screen name="Cart" component={CartPage} />
-          <Drawer.Screen name="Products" component={ProductPage} />
-        </Drawer.Navigator> : <Login />}
+      {
+        user ? (
+          <Drawer.Navigator initialRouteName='Products'>
+
+            <Drawer.Screen name='E-Comerce' component={Products} options = {{
+                headerRight: () => <Cart />
+            }}/>
+
+            <Drawer.Screen name='Home' component={Home} />
+
+            <Drawer.Screen name='Cart' component={CartPage} />
+          </Drawer.Navigator>
+        ) : <Login />
+      }
     </>
   )
 }
 
-const CartIconWithNavigation = () => {
-  const navigation = useNavigation();
-  const [cartItemCount, setCartItemCount] = useState(3); // Simulação de quantidade de itens no carrinho
+const Cart = () => {
+
+  const navigation = useNavigation()
+
+  const { getItemsLength } = useCart()
+
 
   return (
-    <TouchableOpacity
-      style={styles.cartContainer}
-      onPress={() => navigation.navigate('Cart')}
-    >
+    <TouchableOpacity style={styles.cartIcon}
+    onPress={() => navigation.navigate('Cart')}>
+      <Text>{ getItemsLength() }</Text>
       <Icon name="cart-outline" size={24} color="#000" />
-      <Text style={styles.cartCount}>{cartItemCount}</Text>
+
     </TouchableOpacity>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-  },
-  cartContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  cartCount: {
-    marginLeft: 4,
-    fontSize: 16,
-    color: '#000',
-    fontWeight: 'bold',
-  },
-});
+  cartIcon: {
+      flexDirection: 'row',
+      padding: 5,
+      gap: 10
+  }
+})
